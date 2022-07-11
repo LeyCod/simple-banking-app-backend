@@ -1,44 +1,77 @@
-const mysqlConnection = require('../config/db.config');
+//const mysqlConnection = require('../config/db.config');
+const mongoose = require('../config/db.config');
+const {Bank} = require('../models/bankModel.js')
 const jwt = require('jsonwebtoken');
 
 
-//crear usuario
+//Create User
 const createUser = (req, res) => {
 
-    let {email,password} = req.body;
-       
-    mysqlConnection.query('INSERT INTO `users`(`email`, `password`) VALUES (?,?)',[email,password], (err, rows) => {
-        if(!err) {
-          res.json(rows);
+    let {firstname,lastname,age, bankbalance} = req.body;
+
+    // create an username
+    function toUsername(firstname, lastname) {
+        return (firstname.toLowerCase() + lastname.toLowerCase()).replace(/\s+/g, "");
+    }
+
+    const name = toUsername(firstname, lastname);
+
+    // Create Ramdon Number
+
+    function getRandomNum(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    const accountnumber = getRandomNum(10000000, 99999999)
+
+    Bank.findOne({username: name}, function(err, data){
+        if (err) throw err;
+
+        if (data !== null) {
+            console.log("Account already exists");
+            res.json({message: "Account already exists"});
         } else {
-          console.log(err);
+
+            const account = new Bank({
+                username: name,
+                firstname: firstname,
+                lastname: lastname,
+                age: age,
+                balance: bankbalance,
+                accountnum: accountnumber
+            });
+
+            // saves to mongodb
+            account.save(function(err, data){
+                res.json({message: "User Created"});
+            });
         }
-      });  
+    })
+    
   }
 
 
-  //login de usuario
+  //login 
   const login = (req, res)=>{
 
-    let {email,password} = req.body;
-    if (!email) return res.status(400).json({"msg":"Verifique el email"})
+    let {username,password} = req.body;
+    if (!username) return res.status(400).json({"msg":"Verifique el username"})
     if (!password) return res.status(400).json({"msg":"Verifique el password"})
 
-    mysqlConnection.query('SELECT id FROM `users` WHERE email=? AND password=?',[email,password], (err, rows) => {
-      if(!err) {
-        //obtenemos el id
-          const userID = rows[0].id;
 
-          //si no hubo coincidencia en la busqueda devolvemos un msg
-          if(!rows.length) return res.json({"msg":"Email o password incorrecto"})
-      
-          const token = jwt.sign({ userID }, process.env.JWT_KEY, { expiresIn: 60 * 60 });// Generamos el Token!!!
-          return res.json({ userID, token });// Devolvera el usuario y el token creado recientemente al cliente
+        // searches mongodb for account
 
-      } else {
-        console.log(err)
-      }
-    }); 
+        Bank.findOne({username: username}, function(err, data){
+
+            if (err) throw err;
+            if (data == null) {
+                res.json({status: "Account does not exist"});
+            } else {
+                res.json({account: data})
+            }
+        })
 
   }
 
@@ -46,14 +79,14 @@ const createUser = (req, res) => {
 //obtener datos
   const getData = (req, res) => {
 
-    mysqlConnection.query('SELECT * FROM `alumnos`', (err, rows) => {
-        if(!err) {
-            console.log(rows);
-        res.json({"results":rows})
-        } else {
-          console.log(err);
-        }
-      }); 
+    // mysqlConnection.query('SELECT * FROM `alumnos`', (err, rows) => {
+    //     if(!err) {
+    //         console.log(rows);
+    //     res.json({"results":rows})
+    //     } else {
+    //       console.log(err);
+    //     }
+    //   }); 
   }
 
   //exportando los controladores

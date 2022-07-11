@@ -1,19 +1,9 @@
-const mysql = require('mysql'); //requerir el paquete de mysql
+const mongoose = require('mongoose');
 
-const mysqlConnection = mysql.createConnection({
-  host: 'localhost',
-  user:'root',
-  password:'',
-  database: 'poderio_bd'
-})
+mongoose.connect('mongodb+srv://emmanuelleyan:Kec5rn8CSu2E9P6h@cluster0.p2axgok.mongodb.net/?retryWrites=true&w=majority').then(()=>{
+  console.log('Database Connected')
+}).catch((error) => {
+  console.log('Database not connected')
+});
 
-mysqlConnection.connect(function (err) {
-    if (err) {
-      console.error(err);
-      return;
-    } else {
-      console.log('db is connected');
-    }
-  });
-  
-  module.exports = mysqlConnection;
+module.exports = mongoose;
