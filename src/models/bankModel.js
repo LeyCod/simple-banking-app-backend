@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
 
 const accountSchema = new mongoose.Schema({
-    fistname: String,
+    username: String,
+    firstname: String,
     lastname: String,
     age: Number,
-    balance: Number,
+    balance: Number
 });
 
 const Bank = mongoose.model('account', accountSchema);
