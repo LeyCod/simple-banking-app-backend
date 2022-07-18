@@ -1,4 +1,3 @@
-//const mysqlConnection = require('../config/db.config');
 const mongoose = require('../config/db.config');
 const {Bank} = require('../models/bankModel.js')
 const jwt = require('jsonwebtoken');
@@ -62,6 +61,11 @@ const createUser = (req, res) => {
     })
 }
 
+const getData = (req, res) => {
+
+    }
+
   //exportando los controladores
-  exports.createUser = createUser;
-  exports.login = login;
+    exports.getData = getData;
+    exports.createUser = createUser;
+    exports.login = login;
